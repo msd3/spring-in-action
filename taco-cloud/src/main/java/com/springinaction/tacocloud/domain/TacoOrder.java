@@ -8,21 +8,30 @@ import java.util.UUID;
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.CreditCardNumber;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 @Data
 @Slf4j
+// if the annotation parameter value is omitted, then the table name
+// is Taco_Order
+@Table("Taco_Order")
 public class TacoOrder implements Serializable {
 
   private static final long serialVersionUID = 12_432_133_454_676L;
 
+  @Id
   private UUID id;
 
   private OffsetDateTime createdAt;
 
+  // the default value of the Column annotation in this case
+  // is "delivery_name
+  @Column("delivery_name")
   @NotBlank(message = "Delivery name is required")
   private String deliveryName;
 
@@ -47,7 +56,7 @@ public class TacoOrder implements Serializable {
   @Digits(integer = 3, fraction = 0, message = "Invalid CVV")
   private String ccCVV;
 
-//  @Size(min = 1, message = "There must be at least one taco in any order")
+  //  @Size(min = 1, message = "There must be at least one taco in any order")
   private List<Taco> tacos = new ArrayList<>();
 
   public void addTaco(Taco taco) {

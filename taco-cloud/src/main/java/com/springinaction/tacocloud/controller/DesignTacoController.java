@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +38,7 @@ public class DesignTacoController {
 
   @ModelAttribute
   public void addIngredientsToModel(Model model) {
-    List<Ingredient> ingredients = ingredientRepository.findAll();
+    Iterable<Ingredient> ingredients = ingredientRepository.findAll();
 
     Arrays.stream(ingredientTypes)
         .forEach(
@@ -64,7 +65,9 @@ public class DesignTacoController {
     return "redirect:/orders/current";
   }
 
-  private List<Ingredient> filterByType(List<Ingredient> ingredients, Type type) {
-    return ingredients.stream().filter(x -> x.getType() == type).collect(Collectors.toList());
+  private List<Ingredient> filterByType(Iterable<Ingredient> ingredients, Type type) {
+    return StreamSupport.stream(ingredients.spliterator(), false)
+        .filter(x -> x.getType() == type)
+        .collect(Collectors.toList());
   }
 }

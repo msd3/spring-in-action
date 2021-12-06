@@ -11,6 +11,5 @@ import lombok.Value;
 @Value
 public class IngredientRef {
 
-	private final String ingredient;
-
+  private final String ingredient;
 }
