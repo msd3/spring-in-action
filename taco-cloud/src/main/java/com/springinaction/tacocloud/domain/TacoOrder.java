@@ -1,18 +1,27 @@
 package com.springinaction.tacocloud.domain;
 
-import lombok.Data;
+import java.io.Serializable;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
-
+import java.util.UUID;
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
-
+import javax.validation.constraints.Size;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.CreditCardNumber;
 
-import java.util.ArrayList;
-
 @Data
-public class TacoOrder {
+@Slf4j
+public class TacoOrder implements Serializable {
+
+  private static final long serialVersionUID = 12_432_133_454_676L;
+
+  private UUID id;
+
+  private OffsetDateTime createdAt;
 
   @NotBlank(message = "Delivery name is required")
   private String deliveryName;
@@ -38,10 +47,11 @@ public class TacoOrder {
   @Digits(integer = 3, fraction = 0, message = "Invalid CVV")
   private String ccCVV;
 
+//  @Size(min = 1, message = "There must be at least one taco in any order")
   private List<Taco> tacos = new ArrayList<>();
 
   public void addTaco(Taco taco) {
-    this.tacos.add(taco);
+    log.debug("Adding a taco {} to list of tacos", taco);
+    tacos.add(taco);
   }
-
 }
