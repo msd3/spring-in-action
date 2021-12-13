@@ -5,21 +5,29 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import javax.persistence.Entity;
 import javax.validation.constraints.Digits;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
+
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.CreditCardNumber;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
+@RequiredArgsConstructor
+@Entity
 @Slf4j
-// if the annotation parameter value is omitted, then the table name
-// is Taco_Order
-@Table("Taco_Order")
 public class TacoOrder implements Serializable {
 
   private static final long serialVersionUID = 12_432_133_454_676L;
@@ -29,9 +37,6 @@ public class TacoOrder implements Serializable {
 
   private OffsetDateTime createdAt;
 
-  // the default value of the Column annotation in this case
-  // is "delivery_name
-  @Column("delivery_name")
   @NotBlank(message = "Delivery name is required")
   private String deliveryName;
 
