@@ -22,7 +22,7 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PUBLIC)
 public class Taco implements Serializable {
 
