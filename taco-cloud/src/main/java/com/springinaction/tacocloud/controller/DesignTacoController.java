@@ -3,14 +3,18 @@ package com.springinaction.tacocloud.controller;
 import com.springinaction.tacocloud.domain.Ingredient;
 import com.springinaction.tacocloud.domain.Ingredient.Type;
 import com.springinaction.tacocloud.domain.Taco;
+import com.springinaction.tacocloud.domain.TacoOrder;
+import com.springinaction.tacocloud.domain.User;
 import com.springinaction.tacocloud.model.IngredientRepository;
-import java.util.Arrays;
+import com.springinaction.tacocloud.model.TacoRepository;
+import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 import javax.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
+
+import com.springinaction.tacocloud.security.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,53 +25,73 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
-@Slf4j
 @Controller
 @RequestMapping("/design")
-@SessionAttributes("tacoOrder")
+@SessionAttributes("order")
 public class DesignTacoController {
 
-  private final IngredientRepository ingredientRepository;
+  private final IngredientRepository ingredientRepo;
 
-  private final Type[] ingredientTypes = Type.values();
+  private TacoRepository tacoRepo;
+
+  private UserRepository userRepo;
 
   @Autowired
-  public DesignTacoController(IngredientRepository ingredientRepository) {
-    this.ingredientRepository = ingredientRepository;
+  public DesignTacoController(
+      IngredientRepository ingredientRepo, TacoRepository tacoRepo, UserRepository userRepo) {
+    this.ingredientRepo = ingredientRepo;
+    this.tacoRepo = tacoRepo;
+    this.userRepo = userRepo;
   }
 
   @ModelAttribute
   public void addIngredientsToModel(Model model) {
-    Iterable<Ingredient> ingredients = ingredientRepository.findAll();
+    List<Ingredient> ingredients = new ArrayList<>();
+    ingredientRepo.findAll().forEach(ingredients::add);
 
-    Arrays.stream(ingredientTypes)
-        .forEach(
-            type ->
-                model.addAttribute(
-                    type.toString().toLowerCase(Locale.ENGLISH), filterByType(ingredients, type)));
+    Type[] types = Ingredient.Type.values();
+    for (Type type : types) {
+      model.addAttribute(
+          type.toString().toLowerCase(Locale.ENGLISH), filterByType(ingredients, type));
+    }
+  }
+
+  @ModelAttribute(name = "order")
+  public TacoOrder order() {
+    return new TacoOrder();
+  }
+
+  @ModelAttribute(name = "taco")
+  public Taco taco() {
+    return new Taco();
+  }
+
+  @ModelAttribute(name = "user")
+  public User user(Principal principal) {
+    String username = principal.getName();
+    User user = userRepo.findByUsername(username);
+    return user;
   }
 
   @GetMapping
   public String showDesignForm(Model model) {
-    log.info("Show taco design form");
-    model.addAttribute("taco", new Taco());
     return "design";
   }
 
   @PostMapping
-  public String processTaco(@Valid @ModelAttribute("taco") Taco taco, Errors errors) {
+  public String processTaco(@Valid Taco taco, Errors errors, @ModelAttribute TacoOrder order) {
+
     if (errors.hasErrors()) {
-      log.error("Encountered errors while processing a taco {}", errors);
       return "design";
     }
 
-    log.info("Processing a taco {}", taco);
+    Taco saved = tacoRepo.save(taco);
+    order.addTaco(saved);
+
     return "redirect:/orders/current";
   }
 
-  private List<Ingredient> filterByType(Iterable<Ingredient> ingredients, Type type) {
-    return StreamSupport.stream(ingredients.spliterator(), false)
-        .filter(x -> x.getType() == type)
-        .collect(Collectors.toList());
+  private Iterable<Ingredient> filterByType(List<Ingredient> ingredients, Type type) {
+    return ingredients.stream().filter(x -> type == x.getType()).collect(Collectors.toList());
   }
 }
